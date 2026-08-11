@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Giants & Athletics — By-Year PBP Review 2014-2026</title>
+<style>
+body{font-family:system-ui, sans-serif; max-width:1100px; margin:2rem auto; padding:0 1rem; line-height:1.6}
+table{border-collapse:collapse; width:100%; margin:1rem 0} th,td{border:1px solid #ccc; padding:.4rem .6rem; text-align:left} th{background:#f5f5f5}
+a{color:#0a58ca} .eyebrow{color:#666; font-size:.85rem; text-transform:uppercase; letter-spacing:.05em}
+.year-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:.8rem; margin:1rem 0}
+.year-card{border:1px solid #ddd; border-radius:8px; padding:.8rem; text-decoration:none; color:inherit}
+.year-card:hover{border-color:#0a58ca}
+</style>
+</head><body>
+<p class="eyebrow">MLB Plaintext Archive — statsapi.mlb.com only — Giants (137) + Athletics (133) — 2014 → 2026-08-11</p>
+<h1>Review Events by Year</h1>
+<p>Every game below is a verified <code>R,F,D,L,W</code> game (regular + postseason). Click a year to see verified game examples, then open any <code>gamePk</code> on the <a href="https://buffedlizard55-lab.github.io/MLB-PBP/docs/?date=2026-08-11">PBP viewer</a> (Play-by-play tab) or raw <code>feed/live</code>. Master index: <a href="GIANTS_ATHLETICS_MASTER_INDEX.csv">GIANTS_ATHLETICS_MASTER_INDEX.csv</a> — also see <a href="../GIANTS_ATHLETICS_2014-2026_REVIEW.md">full report</a>.</p>
+
+<table>
+<thead><tr><th>Year</th><th>SF Giants</th><th>Athletics</th><th>Viewer (June 15)</th></tr></thead>
+<tbody>
+<tr><td><a href="2014/">2014</a></td><td>181</td><td>165</td><td><a href="https://buffedlizard55-lab.github.io/MLB-PBP/docs/?date=2014-06-15">2014-06-15</a></td></tr>
+<tr><td><a href="2015/">2015</a></td><td>163</td><td>162</td><td><a href="https://buffedlizard55-lab.github.io/MLB-PBP/docs/?date=2015-06-15">2015-06-15</a></td></tr>
+<tr><td><a href="2016/">2016</a></td><td>167</td><td>163</td><td><a href="https://buffedlizard55-lab.github.io/MLB-PBP/docs/?date=2016-06-15">2016-06-15</a></td></tr>
+<tr><td><a href="2017/">2017</a></td><td>163</td><td>163</td><td><a href="https://buffedlizard55-lab.github.io/MLB-PBP/docs/?date=2017-06-15">2017-06-15</a></td></tr>
+<tr><td><a href="2018/">2018</a></td><td>163</td><td>164</td><td><a href="https://buffedlizard55-lab.github.io/MLB-PBP/docs/?date=2018-06-15">2018-06-15</a></td></tr>
+<tr><td><a href="2019/">2019</a></td><td>163</td><td>165</td><td><a href="https://buffedlizard55-lab.github.io/MLB-PBP/docs/?date=2019-06-15">2019-06-15</a></td></tr>
+<tr><td><a href="2020/">2020</a></td><td>65</td><td>73</td><td><a href="https://buffedlizard55-lab.github.io/MLB-PBP/docs/?date=2020-08-15">2020-08-15</a></td></tr>
+<tr><td><a href="2021/">2021</a></td><td>169</td><td>163</td><td><a href="https://buffedlizard55-lab.github.io/MLB-PBP/docs/?date=2021-06-15">2021-06-15</a></td></tr>
+<tr><td><a href="2022/">2022</a></td><td>163</td><td>162</td><td><a href="https://buffedlizard55-lab.github.io/MLB-PBP/docs/?date=2022-06-15">2022-06-15</a></td></tr>
+<tr><td><a href="2023/">2023</a></td><td>165</td><td>162</td><td><a href="https://buffedlizard55-lab.github.io/MLB-PBP/docs/?date=2023-06-15">2023-06-15</a></td></tr>
+<tr><td><a href="2024/">2024</a></td><td>162</td><td>162</td><td><a href="https://buffedlizard55-lab.github.io/MLB-PBP/docs/?date=2024-06-15">2024-06-15</a></td></tr>
+<tr><td><a href="2025/">2025</a></td><td>162</td><td>162</td><td><a href="https://buffedlizard55-lab.github.io/MLB-PBP/docs/?date=2025-06-15">2025-06-15</a></td></tr>
+<tr><td><a href="2026/">2026 (to 08-11)</a></td><td>123</td><td>119</td><td><a href="https://buffedlizard55-lab.github.io/MLB-PBP/docs/?date=2026-08-11">2026-08-11 — HOU@SF & TB@ATH Preview</a></td></tr>
+</tbody>
+</table>
+<p><strong>Totals:</strong> Giants 2,009 games | Athletics ~2,024 games | Combined ~4,033 games. Each <code>Final</code> game has <code>liveData.plays.allPlays[]</code> with pitch-level <code>pitchData</code>/<code>hitData</code>.</p>
+<h2>How to open events</h2>
+<ol>
+<li><strong>Browser:</strong> <code>https://buffedlizard55-lab.github.io/MLB-PBP/docs/?date=YYYY-MM-DD&game=GAMEPK</code> → <em>Play-by-play</em> → expand <em>Official event detail</em>. Search + <em>Scoring only</em>.</li>
+<li><strong>Raw JSON:</strong> <code>https://statsapi.mlb.com/api/v1.1/game/GAMEPK/feed/live</code></li>
+<li><strong>Bulk:</strong> <code>python review/fetch_all.py --start 2014-01-01 --end 2026-08-11</code> (writes <code>review/&lt;year&gt;/games.csv</code> + <code>events/</code>)</li>
+</ol>
+<p>Also see methodology: <a href="https://buffedlizard55-lab.github.io/MLB-PBP/methodology.html">methodology.html</a></p>
+</body></html>
