@@ -1,0 +1,122 @@
+name: Build verified season archives
+
+on:
+  workflow_dispatch:
+    inputs:
+      season:
+        description: "A season from 2014 onward, or all"
+        required: true
+        default: "2026"
+  schedule:
+    - cron: "24 10 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: season-archive-${{ github.event.inputs.season || 'current' }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      seasons: ${{ steps.plan.outputs.seasons }}
+    steps:
+      - id: plan
+        env:
+          REQUESTED: ${{ github.event.inputs.season }}
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import datetime, json, os
+          current = datetime.datetime.now(datetime.timezone.utc).year
+          requested = os.environ.get("REQUESTED") or str(current)
+          if requested == "all":
+              years = list(range(2014, current + 1))
+          else:
+              try:
+                  year = int(requested)
+              except ValueError:
+                  raise SystemExit("season must be an integer or all")
+              if year < 2014 or year > current:
+                  raise SystemExit(f"season must be between 2014 and {current}")
+              years = [year]
+          print("seasons=" + json.dumps(years))
+          PY
+
+  archive:
+    needs: plan
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        season: ${{ fromJSON(needs.plan.outputs.seasons) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Restore the prior season release, if present
+        env:
+          GH_TOKEN: ${{ github.token }}
+          YEAR: ${{ matrix.season }}
+        run: |
+          mkdir -p work
+          if gh release download "archive-$YEAR" --pattern "mlb-pbp-$YEAR.tar.gz" --dir work; then
+            tar -xzf "work/mlb-pbp-$YEAR.tar.gz" -C work
+          else
+            echo "No prior archive asset; starting this season from the official schedule."
+          fi
+      - name: Retrieve verified official feeds
+        env:
+          YEAR: ${{ matrix.season }}
+        run: |
+          TODAY="$(date -u +%F)"
+          CURRENT_YEAR="$(date -u +%Y)"
+          END="$YEAR-12-31"
+          if [ "$YEAR" = "$CURRENT_YEAR" ]; then END="$TODAY"; fi
+          python -m mlb_pbp archive \
+            --start "$YEAR-01-01" \
+            --end "$END" \
+            --output "work/mlb-pbp-$YEAR" \
+            --formats text,raw,events \
+            --workers 2 \
+            --request-delay 0.2
+
+          # Completed feeds can be corrected, and today's feed may have been
+          # archived before first pitch. Refresh the trailing week only.
+          if [ "$YEAR" = "$CURRENT_YEAR" ]; then
+            WEEK_AGO="$(date -u -d '7 days ago' +%F)"
+            python -m mlb_pbp archive \
+              --start "$WEEK_AGO" \
+              --end "$TODAY" \
+              --output "work/mlb-pbp-$YEAR" \
+              --formats text,raw,events \
+              --workers 2 \
+              --request-delay 0.2 \
+              --refresh
+          fi
+          python -m mlb_pbp verify "work/mlb-pbp-$YEAR"
+      - name: Package season
+        env:
+          YEAR: ${{ matrix.season }}
+        run: |
+          rm -f "work/mlb-pbp-$YEAR.tar.gz"
+          tar -czf "work/mlb-pbp-$YEAR.tar.gz" -C work "mlb-pbp-$YEAR"
+          sha256sum "work/mlb-pbp-$YEAR.tar.gz" > "work/mlb-pbp-$YEAR.tar.gz.sha256"
+      - name: Publish durable release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          YEAR: ${{ matrix.season }}
+        run: |
+          if ! gh release view "archive-$YEAR" >/dev/null 2>&1; then
+            gh release create "archive-$YEAR" \
+              --target "$GITHUB_SHA" \
+              --title "Verified MLB play-by-play archive: $YEAR" \
+              --notes "Generated only from HTTPS responses returned by statsapi.mlb.com. Includes source URLs, retrieval times, MLB notices, and SHA-256 provenance. Code is MIT-licensed; MLB data is not relicensed and remains subject to MLB Advanced Media's terms."
+          fi
+          gh release upload "archive-$YEAR" \
+            "work/mlb-pbp-$YEAR.tar.gz" \
+            "work/mlb-pbp-$YEAR.tar.gz.sha256" \
+            --clobber

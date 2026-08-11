@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Data provenance, verification, and archive methodology for MLB Plaintext.">
+  <title>Data &amp; methodology · MLB Plaintext Archive</title>
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true">PBP</span>
+        <span><strong>MLB Plaintext</strong><small>Official data, readable by anyone</small></span>
+      </a>
+      <nav aria-label="Primary"><a href="./">Game browser</a><a href="https://github.com/buffedlizard55-lab/MLB-PBP">GitHub</a></nav>
+    </div>
+  </header>
+
+  <main id="main" class="prose">
+    <p class="eyebrow">Data documentation</p>
+    <h1>Source, scope, and verification</h1>
+    <p class="callout"><strong>The project never substitutes generated, estimated, or manually keyed baseball data.</strong> If MLB does not return a value, the interface shows it as unavailable. The raw download is the unmodified official response.</p>
+
+    <h2 id="source">One authoritative source</h2>
+    <p>Schedule and game data come directly from the MLB Stats API on the MLB-controlled <code>statsapi.mlb.com</code> domain over HTTPS. The site makes these requests in the visitor’s browser:</p>
+    <pre>GET https://statsapi.mlb.com/api/v1/schedule
+    ?sportId=1
+    &amp;date=YYYY-MM-DD
+    &amp;gameTypes=R,F,D,L,W
+    &amp;hydrate=linescore
+
+GET https://statsapi.mlb.com/api/v1.1/game/{gamePk}/feed/live</pre>
+    <p>The full game feed contains MLB’s game metadata, teams, venue, status, players, linescore, box score, decisions, play-by-play, pitch/action events, runners, and available tracking measurements. Every request includes a link to its exact official endpoint.</p>
+
+    <h2 id="scope">Archive scope</h2>
+    <ul>
+      <li><strong>League:</strong> Major League Baseball (<code>sportId=1</code>).</li>
+      <li><strong>Start:</strong> January 1, 2014. Dates before the first regular-season game simply return no qualifying game.</li>
+      <li><strong>End:</strong> the date on which the browser or archive command runs.</li>
+      <li><strong>Included types:</strong> regular season (<code>R</code>) and MLB postseason game-type codes <code>F</code>, <code>D</code>, <code>L</code>, and <code>W</code>.</li>
+      <li><strong>Excluded:</strong> Spring Training, exhibitions, and the All-Star Game.</li>
+    </ul>
+    <p>The web viewer requests any date on demand, so it does not depend on a hand-maintained list of games. The repository’s command-line archiver enumerates games from the same official schedule endpoint and supports resumable full-history pulls.</p>
+
+    <h2 id="verification">Verification rules</h2>
+    <p>A response is displayed or written only after all applicable checks pass:</p>
+    <ol>
+      <li>The request URL uses HTTPS and the exact host <code>statsapi.mlb.com</code>.</li>
+      <li>The HTTP response succeeds and parses as JSON.</li>
+      <li>The response includes MLB Advanced Media’s copyright notice.</li>
+      <li>For a game feed, the returned <code>gamePk</code> equals the requested identifier.</li>
+      <li>The archiver records a SHA-256 digest of every exact raw response in its manifest.</li>
+    </ol>
+    <p>These checks establish provenance and detect mix-ups or later file corruption. They do not alter MLB’s data. MLB can revise a completed game; rerunning with <code>--refresh</code> retrieves and fingerprints the revised response.</p>
+
+    <h2 id="formats">What each download means</h2>
+    <h3>Raw JSON</h3>
+    <p>The complete MLB response serialized as readable JSON. No fields are renamed, corrected, inferred, or dropped. Use this when exact source fidelity matters.</p>
+    <h3>Plain text report</h3>
+    <p>A deterministic presentation of official fields: provenance, game metadata, line score, decisions, every at-bat description, every pitch/action event, runner movements, and batting/pitching lines. Labels and layout are added by this project; baseball values and descriptions come from MLB.</p>
+    <h3>Events NDJSON</h3>
+    <p>Newline-delimited JSON for streaming tools. Each line identifies itself as metadata, a play, or an event and retains the associated <code>gamePk</code> and array indexes. The raw JSON remains the canonical no-loss copy.</p>
+
+    <h2 id="limitations">Known limitations, stated rather than filled in</h2>
+    <ul>
+      <li>Availability and field coverage vary by season, game state, park, and MLB’s own collection systems.</li>
+      <li>Older games can contain less pitch or tracking detail than newer games.</li>
+      <li>Postponed, suspended, cancelled, or not-yet-started games may have no plays.</li>
+      <li>The official feed can be corrected after a game. The retrieval timestamp and digest identify the version downloaded.</li>
+      <li>This project does not promise that MLB’s public endpoint will remain unchanged or continuously available.</li>
+    </ul>
+
+    <h2 id="rights">Rights and attribution</h2>
+    <p>The software in the repository is open source. MLB data is not relicensed by this project. Each response carries MLB Advanced Media, L.P.’s notice and a link to MLB’s terms. Anyone downloading or redistributing data is responsible for following those terms.</p>
+    <p>This independent project is not affiliated with or endorsed by Major League Baseball. MLB and club names appear only to identify the records returned by the official source.</p>
+  </main>
+
+  <footer><p>Code is open source. Game data remains subject to MLB Advanced Media’s copyright and terms.</p></footer>
+</body>
+</html>

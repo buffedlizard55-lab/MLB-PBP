@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Searchable, plain-text MLB regular-season and postseason play-by-play from the official MLB Stats API.">
+  <meta name="color-scheme" content="light dark">
+  <title>MLB Plaintext Archive</title>
+  <link rel="stylesheet" href="./css/styles.css">
+  <script type="module" src="./js/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to game data</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="./" aria-label="MLB Plaintext Archive home">
+        <span class="brand-mark" aria-hidden="true">PBP</span>
+        <span><strong>MLB Plaintext</strong><small>Official data, readable by anyone</small></span>
+      </a>
+      <nav aria-label="Primary">
+        <a href="./methodology.html">Data &amp; methodology</a>
+        <a href="https://github.com/buffedlizard55-lab/MLB-PBP">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="date-toolbar" aria-labelledby="date-heading">
+      <div>
+        <p class="eyebrow">Regular season + postseason · 2014–present</p>
+        <h1 id="date-heading">Find a game</h1>
+      </div>
+      <form id="date-form" class="date-controls">
+        <button id="previous-day" class="icon-button" type="button" aria-label="Previous day">←</button>
+        <label>
+          <span class="sr-only">Game date</span>
+          <input id="game-date" name="date" type="date" min="2014-01-01" required>
+        </label>
+        <button id="next-day" class="icon-button" type="button" aria-label="Next day">→</button>
+        <button class="button button-secondary" type="submit">Load date</button>
+        <button id="today" class="text-button" type="button">Today</button>
+      </form>
+    </section>
+
+    <aside class="source-banner" aria-label="Data provenance">
+      <span class="verified-dot" aria-hidden="true"></span>
+      <span><strong>Direct from MLB.</strong> No scores or plays are invented, inferred, or manually entered.</span>
+      <a href="./methodology.html#verification">How verification works</a>
+    </aside>
+
+    <section id="notice" class="notice" hidden role="status" aria-live="polite"></section>
+    <section id="schedule" aria-live="polite" aria-busy="true"></section>
+    <section id="game-detail" hidden aria-live="polite" aria-busy="false"></section>
+  </main>
+
+  <footer>
+    <p>This independent open-source viewer is not affiliated with or endorsed by Major League Baseball.</p>
+    <p>Game data remains subject to the copyright and terms returned by MLB Advanced Media, L.P.</p>
+  </footer>
+
+  <template id="loading-template">
+    <div class="loading-card">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Requesting official MLB data…</p>
+    </div>
+  </template>
+</body>
+</html>
