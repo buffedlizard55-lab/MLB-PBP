@@ -51,7 +51,7 @@ The site is dependency-free static HTML, CSS, and JavaScript in [`docs/`](docs/)
 Run it locally:
 
 ```bash
-python -m http.server 8000 --directory site --bind 0.0.0.0
+python -m http.server 8000 --directory docs --bind 0.0.0.0
 # open http://localhost:8000
 ```
 
