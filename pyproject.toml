@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mlb-plaintext-pbp"
+version = "1.0.0"
+description = "Verified official MLB play-by-play archive and plain-text formatter"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "MLB-PBP contributors" }]
+dependencies = []
+
+[project.scripts]
+mlb-pbp = "mlb_pbp.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["mlb_pbp*"]
