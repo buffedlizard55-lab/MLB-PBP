@@ -74,6 +74,10 @@ GET https://statsapi.mlb.com/api/v1.1/game/{gamePk}/feed/live</pre>
       <li>This project does not promise that MLB’s public endpoint will remain unchanged or continuously available.</li>
     </ul>
 
+    <h2 id="event-log">Live event log (local only)</h2>
+    <p>The web viewer includes an <strong>Event log</strong> tab that records short-lived official-game states as this page observes them during a Live game: a run scoring, an official-scorer ruling that is initially pending and later finalized, a scoring ruling corrected after the fact, and a home-run / boundary call that goes under replay review. Each event is captured at every stage seen — for example, <em>pending</em> then <em>resolved</em>, or <em>under review</em> then <em>overturned</em> / <em>confirmed</em>.</p>
+    <p>This log is a local-only record of what the page watched unfold. It is stored in the visitor’s browser (<code>localStorage</code>, keyed to the game) so it survives a refresh and can be reopened later; it is <strong>not</strong> part of MLB’s official payload and is never written to this repository or any server. Ingestion runs only while the game’s <code>abstractGameState</code> is <code>Live</code>, so a game that was never opened while Live produces no entries. The baseball values shown are the literal fields MLB returned (<code>liveData.plays.scoringPlays</code>, <code>result.eventType</code>, <code>playEvents[].details.eventType</code>, <code>playEvents[].reviewDetails</code>, and <code>gameData.status.reason</code>); only the human-readable labels are derived by this project.</p>
+
     <h2 id="rights">Rights and attribution</h2>
     <p>The software in the repository is open source. MLB data is not relicensed by this project. Each response carries MLB Advanced Media, L.P.’s notice and a link to MLB’s terms. Anyone downloading or redistributing data is responsible for following those terms.</p>
     <p>This independent project is not affiliated with or endorsed by Major League Baseball. MLB and club names appear only to identify the records returned by the official source.</p>

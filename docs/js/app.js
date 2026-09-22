@@ -8,6 +8,10 @@ import {
   statusLabel,
   teamAbbreviation,
 } from "./format.js";
+import {
+  createLogStore,
+  renderEventLogHTML,
+} from "./eventlog.js";
 
 const elements = {
   form: document.querySelector("#date-form"),
@@ -32,6 +36,10 @@ const state = {
   gameController: null,
   refreshTimer: null,
 };
+
+// Per-game transient-event log. (Re)created to match the selected gamePk inside
+// renderGame so every entry is namespaced and persisted for later retrieval.
+let eventLog = null;
 
 const escapeHtml = (input) => String(input ?? "")
   .replaceAll("&", "&amp;")
@@ -353,6 +361,7 @@ function renderGame(result) {
         <button class="tab-button" role="tab" aria-selected="false" aria-controls="plays-panel" id="plays-tab">Play-by-play</button>
         <button class="tab-button" role="tab" aria-selected="false" aria-controls="box-panel" id="box-tab">Box score</button>
         <button class="tab-button" role="tab" aria-selected="false" aria-controls="data-panel" id="data-tab">Plain text &amp; raw data</button>
+        <button class="tab-button" role="tab" aria-selected="false" aria-controls="log-panel" id="log-tab">Event log</button>
       </div>
       <section class="tab-panel" id="summary-panel" role="tabpanel" aria-labelledby="summary-tab">
         <div class="section-title"><h2>Line score</h2><span class="eyebrow">As supplied by MLB</span></div>
@@ -386,6 +395,7 @@ function renderGame(result) {
           <dt>MLB response notice</dt><dd>${e(feed.copyright)}</dd>
         </dl>
       </section>
+      <section class="tab-panel" id="log-panel" role="tabpanel" aria-labelledby="log-tab" hidden></section>
     </div>`;
 
   elements.detail.hidden = false;
@@ -393,6 +403,40 @@ function renderGame(result) {
   bindGameControls();
   selectScheduleCard();
   scheduleLiveRefresh(status, feed?.metaData?.wait);
+
+  // Capture transient official-game events (score changes, scoring-pending
+  // rulings, scoring-ruling changes, boundary calls) observed in this feed and
+  // render the retrievable log. The store is scoped to the game so entries
+  // survive a refresh and can be reopened later. Ingestion happens only while
+  // the game is Live: we record what this page actually watched unfold, and we
+  // do not synthesize misleading single-stage (resolved-only) entries for a game
+  // that was never opened while Live. The persisted log is still rendered on any
+  // later reopen, Live or Final.
+  if (state.gamePk) {
+    if (!eventLog || eventLog.gamePk !== state.gamePk) {
+      eventLog = createLogStore(state.gamePk);
+      eventLog.load();
+    }
+    if (status?.abstractGameState === "Live") {
+      eventLog.ingest(result.data, result.fetchedAt);
+    }
+    renderEventLogInto();
+  }
+}
+
+function renderEventLogInto() {
+  const panel = elements.detail.querySelector("#log-panel");
+  if (!panel) return;
+  panel.innerHTML = renderEventLogHTML(eventLog ? eventLog.getEntries() : []);
+  const tab = elements.detail.querySelector("#log-tab");
+  if (tab && eventLog) {
+    const count = eventLog.count();
+    tab.textContent = count > 0 ? `Event log (${count})` : "Event log";
+  }
+  panel.querySelector("#log-clear")?.addEventListener("click", () => {
+    eventLog?.clear();
+    renderEventLogInto();
+  });
 }
 
 function selectScheduleCard() {
@@ -536,6 +580,7 @@ async function navigateDate(date, { replace = false } = {}) {
   state.feed = null;
   state.raw = null;
   state.source = null;
+  eventLog = null;
   elements.detail.hidden = true;
   elements.detail.replaceChildren();
   updateUrl({ date, gamePk: "" }, replace);

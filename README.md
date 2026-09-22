@@ -17,6 +17,7 @@ The project uses one baseball-data source: HTTPS responses from MLB's own [`stat
 - Downloads a readable `.txt` report, complete raw `.json`, or event-oriented `.ndjson` without a server or account.
 - Bulk-archives January 1, 2014 through any requested end date with retries, rate limiting, resume support, provenance checks, and checksums.
 - Refreshes live games automatically using the wait interval returned in MLB's feed.
+- Logs transient official-game events while a game is **Live** — score changes, official-scorer ruling changes, scoring-pending rulings, and boundary calls — into a per-game **Event log** tab, stored locally in the browser so it can be reopened and read after the event (or the game) is over.
 
 The site has no sample scores and no fallback dataset. If the official endpoint cannot be reached or does not return a value, the interface says so.
 
@@ -56,6 +57,8 @@ python -m http.server 8000 --directory docs --bind 0.0.0.0
 ```
 
 Opening `docs/index.html` as a `file://` URL is not recommended; use an HTTP server so browser module and CORS behavior matches GitHub Pages.
+
+Each game also has an **Event log** tab. While the game is Live, the site records score changes, scoring-pending rulings, scoring-ruling changes, and boundary calls as they occur, capturing each stage (for example, *pending* → *resolved*, or *under review* → *overturned*/*confirmed*). Entries are kept in the browser (`localStorage`, keyed to the game) so they survive a refresh and can be reopened and read afterward. This log is a local record of what the page watched; it is never sent to a server or written into the repository.
 
 ## Command-line archive
 
@@ -149,6 +152,7 @@ python -m compileall -q mlb_pbp
 node --check docs/js/api.js
 node --check docs/js/format.js
 node --check docs/js/app.js
+node --test tests/test_eventlog.mjs
 ```
 
 Test fixtures are conspicuously labeled synthetic and are never published as baseball data. Continuous integration runs Python tests, compiles the package, checks browser JavaScript syntax, and exercises CLI help.
